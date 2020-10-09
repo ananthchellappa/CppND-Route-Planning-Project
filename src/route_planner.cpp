@@ -43,8 +43,10 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
         node->parent = current_node;
         node->h_value = this->CalculateHValue( node );
         node->g_value = current_node->g_value + node->distance( *current_node );    // could also use call on current_node?
-        node->visited = true;   // but, we never make use of this. Does the compiler report that?
-        this->open_list.push_back( node );
+        if( ! node->visited ){
+            node->visited = true;   // but, we never make use of this. Does the compiler report that?
+            this->open_list.push_back( node );
+        }
     }
 }
 
@@ -81,27 +83,18 @@ RouteModel::Node *RoutePlanner::NextNode() {
 
 std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node *current_node) {
     // Create path_found vector
-    // std::cout << "In ConstructFinalPath\n";
-    // std::cout << "Retrace, starting with " << current_node << "\n";
     distance = 0.0f;
     std::vector<RouteModel::Node> path_found;
-    int i = 0;
 
     // TODO: Implement your solution here.
-    RouteModel::Node *parent = current_node->parent;
-    path_found.push_back( *current_node );          // mistake made : current_node instead of *current_node
-    while( parent && i++ < 33100 ){
-        distance += current_node->distance( *parent );  // mistake made : parent instead of *parent
-        path_found.push_back( *parent );          // mistake made : current_node instead of *current_node
-        // std::cout  << parent << "\n";
-        // std::cout << current_node << "\n";
+    while( current_node ){
+        if(current_node->parent)
+            distance += current_node->distance( *(current_node->parent));
 
-        current_node = parent;
-        parent = current_node->parent;
-
+        path_found.push_back( *current_node ); 
+        current_node = current_node->parent;
 
     }
-    // std::cout << i << "\n";
     std::reverse( path_found.begin(), path_found.end() );
 
     distance *= m_Model.MetricScale(); // Multiply the distance by the scale of the map to get meters.
@@ -124,6 +117,8 @@ void RoutePlanner::AStarSearch() {
     // std::cout << "starting.. and end_node is " << end_node << "\n";
     // std::cout << "parent of start is " << start_node->parent << "\n";
     // TODO: Implement your solution here.
+    open_list.push_back( start_node );  // helped
+    start_node->visited = true;         // helped -- don't understand how not having this can break it though..
     while( current_node != end_node ){  // how do you know this will work?
         i++;
         if( i > -1 ) { // 33090 - to get the last 9 of 33099
@@ -132,8 +127,8 @@ void RoutePlanner::AStarSearch() {
         AddNeighbors( current_node );
         current_node = NextNode();      // how are you referring to the current object? Just doesn't feel right..
     }
-    std::cout << current_node << "   ... and done\n";
-    std::cout << "Parent of end " << current_node->parent << "\n";
-    std::cout << "hops : " << i << "\n";
+    // std::cout << current_node << "   ... and done\n";
+    // std::cout << "Parent of end " << current_node->parent << "\n";
+    // std::cout << "hops : " << i << "\n";
     m_Model.path = ConstructFinalPath( current_node );
 }
