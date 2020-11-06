@@ -113,22 +113,15 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 void RoutePlanner::AStarSearch() {
     // the start and end are created in the RoutePlanner instance by the constructor 
     RouteModel::Node *current_node = start_node;
-    int i = 0;
-    // std::cout << "starting.. and end_node is " << end_node << "\n";
-    // std::cout << "parent of start is " << start_node->parent << "\n";
+
     // TODO: Implement your solution here.
-    open_list.push_back( start_node );  // helped
+    open_list.push_back( start_node );  // helped by Shrey T
     start_node->visited = true;         // helped -- don't understand how not having this can break it though..
     while( current_node != end_node ){  // how do you know this will work?
-        i++;
-        if( i > -1 ) { // 33090 - to get the last 9 of 33099
-            // std::cout << current_node << "\n";
-        }
+
         AddNeighbors( current_node );
         current_node = NextNode();      // how are you referring to the current object? Just doesn't feel right..
     }
-    // std::cout << current_node << "   ... and done\n";
-    // std::cout << "Parent of end " << current_node->parent << "\n";
-    // std::cout << "hops : " << i << "\n";
+
     m_Model.path = ConstructFinalPath( current_node );
 }
